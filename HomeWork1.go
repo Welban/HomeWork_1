@@ -6,6 +6,10 @@ import (
 	"os"
 )
 
+func main() {
+	uniq(true)
+}
+
 func getFile() (*bufio.Scanner, *os.File, error) {
 
 	// Открытие файла для чтения
@@ -61,10 +65,6 @@ func countByString(c bool) ([]string, map[string]int, error) {
 	}
 
 	return box, countByString, nil
-}
-
-func main() {
-	uniq(true)
 }
 
 func uniq(c bool) {
