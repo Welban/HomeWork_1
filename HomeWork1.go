@@ -25,7 +25,7 @@ func getFile() (*bufio.Scanner, *os.File, error) {
 	return scanner, file, nil
 }
 
-// Функция для подсчета строк в файле
+// Функция для подсчита количества встречаний строки во входных данных
 func countByString(c bool) ([]string, map[string]int, error) {
 	var (
 		line          string
@@ -67,11 +67,10 @@ func countByString(c bool) ([]string, map[string]int, error) {
 	return inputLines, countByString, nil
 }
 
-// Функция для подсчета строк в файле
-func repeatByLines(c bool) ([]string, error) {
+// Функция для вывода только тех строк, которые повторились во входных данных
+func repeatByLinesD(c bool) ([]string, error) {
 	var (
-		line          string
-		inputLines    []string
+		uniqueLines   []string
 		repeatByLines = make(map[string]int)
 	)
 
@@ -92,11 +91,12 @@ func repeatByLines(c bool) ([]string, error) {
 				repeatByLines[currentLine] = 1
 			}
 		}
+	}
 
-		if line != currentLine && repeatByLines[currentLine] > 1 {
-			line = currentLine
-			inputLines = append(inputLines, line)
-			continue
+	// Формирование списка повторяющихся строк
+	for line, count := range repeatByLines {
+		if count > 1 {
+			uniqueLines = append(uniqueLines, line)
 		}
 	}
 
@@ -106,22 +106,74 @@ func repeatByLines(c bool) ([]string, error) {
 		return nil, err
 	}
 
-	return inputLines, nil
+	return uniqueLines, nil
+}
+
+// Функция для вывода только тех строк, которые не повторились во входных данных
+func repeatByLinesU(c bool) ([]string, error) {
+	var (
+		uniqueLines   []string
+		repeatByLines = make(map[string]int)
+	)
+
+	scanner, file, err := getFile()
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	// Чтение файла по одной строке
+	for scanner.Scan() {
+		currentLine := scanner.Text()
+		//inputLines = append(inputLines, currentLine)
+
+		if c {
+			count, ok := repeatByLines[currentLine]
+			if ok {
+				repeatByLines[currentLine] = count + 1
+			} else {
+				repeatByLines[currentLine] = 1
+			}
+		}
+	}
+
+	// Формирование списка неповторяющихся строк
+	for line, count := range repeatByLines {
+		if count == 1 {
+			uniqueLines = append(uniqueLines, line)
+		}
+	}
+
+	// Проверка ошибок после завершения сканирования
+	err = scanner.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return uniqueLines, nil
 }
 
 func uniq(c bool) {
 
-	inputLinesTwo, err := repeatByLines(c)
+	linesOfC, countByString, err := countByString(c)
 	if err != nil {
 		fmt.Println("Ошибка при подсчете строк:", err)
 		return
 	}
 
-	inputLines, countByString, err := countByString(c)
+	linesOfD, err := repeatByLinesD(c)
 	if err != nil {
 		fmt.Println("Ошибка при подсчете строк:", err)
 		return
 	}
+
+	linesOfU, err := repeatByLinesU(c)
+	if err != nil {
+		fmt.Println("Ошибка при подсчете строк:", err)
+		return
+	}
+
+	//////////////////////////////////////////////////////
 
 	// Создание нового файла для записи
 	outputFile, err := os.Create("output.txt")
@@ -134,8 +186,10 @@ func uniq(c bool) {
 	// Создание нового писателя для записи в файл
 	writer := bufio.NewWriter(outputFile)
 
-	// Запись строк из box в файл
-	for _, line := range inputLines {
+	//////////////////////////////////////////////////////
+	_, err = writer.WriteString("parameter -c \n")
+	// Запись строк из inputLines в файл
+	for _, line := range linesOfC {
 		if c {
 			line = fmt.Sprintf("%d %s", countByString[line], line)
 		}
@@ -146,10 +200,11 @@ func uniq(c bool) {
 		}
 	}
 	_, err = writer.WriteString("\n")
+	_, err = writer.WriteString("parameter -d \n")
 
-	for _, line := range inputLinesTwo {
+	for _, line := range linesOfD {
 		if c {
-			line = fmt.Sprintf("%s ", line)
+			line = fmt.Sprintf("%s", line)
 		}
 		_, err := writer.WriteString(line + "\n")
 		if err != nil {
@@ -158,6 +213,20 @@ func uniq(c bool) {
 		}
 	}
 	_, err = writer.WriteString("\n")
+	_, err = writer.WriteString("parameter -u \n")
+
+	for _, line := range linesOfU {
+		if c {
+			line = fmt.Sprintf("%s", line)
+		}
+		_, err := writer.WriteString(line + "\n")
+		if err != nil {
+			fmt.Println("Ошибка при записи в файл:", err)
+			return
+		}
+	}
+
+	//////////////////////////////////////////////////////
 
 	// Сброс буфера, чтобы убедиться, что все данные записаны в файл
 	err = writer.Flush()

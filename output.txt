@@ -1,9 +1,14 @@
+parameter -c 
 3 I love music.
 1 
 4 I love music of Kartik.
 1 Thanks.
 4 I love music of Kartik.
 
-I love music. 
-I love music of Kartik. 
+parameter -d 
+I love music.
+I love music of Kartik.
 
+parameter -u 
+
+Thanks.
