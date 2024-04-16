@@ -29,7 +29,7 @@ func getFile() (*bufio.Scanner, *os.File, error) {
 func countByString(c bool) ([]string, map[string]int, error) {
 	var (
 		line          string
-		box           []string
+		inputLines    []string
 		countByString = make(map[string]int)
 	)
 
@@ -53,7 +53,7 @@ func countByString(c bool) ([]string, map[string]int, error) {
 
 		if line != currentLine {
 			line = currentLine
-			box = append(box, line)
+			inputLines = append(inputLines, line)
 			continue
 		}
 	}
@@ -64,12 +64,60 @@ func countByString(c bool) ([]string, map[string]int, error) {
 		return nil, nil, err
 	}
 
-	return box, countByString, nil
+	return inputLines, countByString, nil
+}
+
+// Функция для подсчета строк в файле
+func repeatByLines(c bool) ([]string, error) {
+	var (
+		line          string
+		inputLines    []string
+		repeatByLines = make(map[string]int)
+	)
+
+	scanner, file, err := getFile()
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	// Чтение файла по одной строке
+	for scanner.Scan() {
+		currentLine := scanner.Text()
+		if c {
+			count, ok := repeatByLines[currentLine]
+			if ok {
+				repeatByLines[currentLine] = count + 1
+			} else {
+				repeatByLines[currentLine] = 1
+			}
+		}
+
+		if line != currentLine && repeatByLines[currentLine] > 1 {
+			line = currentLine
+			inputLines = append(inputLines, line)
+			continue
+		}
+	}
+
+	// Проверка ошибок после завершения сканирования
+	err = scanner.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return inputLines, nil
 }
 
 func uniq(c bool) {
 
-	box, countByString, err := countByString(c)
+	inputLinesTwo, err := repeatByLines(c)
+	if err != nil {
+		fmt.Println("Ошибка при подсчете строк:", err)
+		return
+	}
+
+	inputLines, countByString, err := countByString(c)
 	if err != nil {
 		fmt.Println("Ошибка при подсчете строк:", err)
 		return
@@ -87,7 +135,7 @@ func uniq(c bool) {
 	writer := bufio.NewWriter(outputFile)
 
 	// Запись строк из box в файл
-	for _, line := range box {
+	for _, line := range inputLines {
 		if c {
 			line = fmt.Sprintf("%d %s", countByString[line], line)
 		}
@@ -97,6 +145,19 @@ func uniq(c bool) {
 			return
 		}
 	}
+	_, err = writer.WriteString("\n")
+
+	for _, line := range inputLinesTwo {
+		if c {
+			line = fmt.Sprintf("%s ", line)
+		}
+		_, err := writer.WriteString(line + "\n")
+		if err != nil {
+			fmt.Println("Ошибка при записи в файл:", err)
+			return
+		}
+	}
+	_, err = writer.WriteString("\n")
 
 	// Сброс буфера, чтобы убедиться, что все данные записаны в файл
 	err = writer.Flush()
