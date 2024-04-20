@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -153,6 +154,68 @@ func repeatByLinesU(c bool) ([]string, error) {
 	return uniqueLines, nil
 }
 
+// Функция для вывода только тех строк, которые не повторились во входных данных
+func repeatByLinesF(c bool, numFields int) ([]string, error) {
+	var (
+		countEntered  int
+		line          string
+		inputLines    []string
+		repeatByLines = make(map[string]int)
+	)
+
+	scanner, file, err := getFile()
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	// Чтение файла по одной строке
+	for scanner.Scan() {
+		currentLine := scanner.Text()
+		fields := strings.Fields(currentLine)
+		memoryLine := currentLine
+
+		if len(fields) > numFields {
+
+			currentLine = strings.Join(fields[numFields:], " ")
+
+		}
+
+		if c {
+			count, ok := repeatByLines[currentLine]
+			if ok {
+				repeatByLines[currentLine] = count + 1
+			} else {
+				repeatByLines[currentLine] = 1
+			}
+		}
+
+		// Формирование списка неповторяющихся строк
+		if line != currentLine {
+			countEntered++
+			if countEntered == 1 {
+				line = memoryLine
+				inputLines = append(inputLines, line)
+				line = currentLine
+				countEntered = 0
+				continue
+			}
+			line = currentLine
+			inputLines = append(inputLines, line)
+		}
+		countEntered = 0
+
+	}
+
+	// Проверка ошибок после завершения сканирования
+	err = scanner.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return inputLines, nil
+}
+
 func uniq(c bool) {
 
 	linesOfC, countByString, err := countByString(c)
@@ -168,6 +231,12 @@ func uniq(c bool) {
 	}
 
 	linesOfU, err := repeatByLinesU(c)
+	if err != nil {
+		fmt.Println("Ошибка при подсчете строк:", err)
+		return
+	}
+
+	linesOfF, err := repeatByLinesF(c, 1)
 	if err != nil {
 		fmt.Println("Ошибка при подсчете строк:", err)
 		return
@@ -216,6 +285,20 @@ func uniq(c bool) {
 	_, err = writer.WriteString("parameter -u \n")
 
 	for _, line := range linesOfU {
+		if c {
+			line = fmt.Sprintf("%s", line)
+		}
+		_, err := writer.WriteString(line + "\n")
+		if err != nil {
+			fmt.Println("Ошибка при записи в файл:", err)
+			return
+		}
+	}
+
+	_, err = writer.WriteString("\n")
+	_, err = writer.WriteString("parameter -f \n")
+
+	for _, line := range linesOfF {
 		if c {
 			line = fmt.Sprintf("%s", line)
 		}

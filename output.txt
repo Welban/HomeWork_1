@@ -1,14 +1,25 @@
 parameter -c 
-3 I love music.
+1 We love music.
+1 I love music.
+1 They love music.
 1 
-4 I love music of Kartik.
+1 I love music of Kartik.
+1 We love music of Kartik.
 1 Thanks.
-4 I love music of Kartik.
 
 parameter -d 
-I love music.
-I love music of Kartik.
 
 parameter -u 
+Thanks.
+We love music.
+I love music.
+They love music.
 
+I love music of Kartik.
+We love music of Kartik.
+
+parameter -f 
+We love music.
+
+I love music of Kartik.
 Thanks.
