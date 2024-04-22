@@ -200,11 +200,68 @@ func repeatByLinesF(c bool, numFields int) ([]string, error) {
 				countEntered = 0
 				continue
 			}
-			line = currentLine
-			inputLines = append(inputLines, line)
 		}
-		countEntered = 0
+	}
 
+	// Проверка ошибок после завершения сканирования
+	err = scanner.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return inputLines, nil
+}
+
+func repeatByLinesS(c bool, numChars int) ([]string, error) {
+	var (
+		countEntered  int
+		line          string
+		inputLines    []string
+		repeatByLines = make(map[string]int)
+	)
+
+	scanner, file, err := getFile()
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	// Чтение файла по одной строке
+	for scanner.Scan() {
+		currentLine := scanner.Text()
+		memoryLine := currentLine
+
+		if currentLine == "" {
+			line = memoryLine
+			inputLines = append(inputLines, line)
+			line = currentLine
+			continue
+		} else if len(currentLine) <= numChars {
+			continue
+		}
+
+		currentLine = currentLine[numChars:]
+
+		if c {
+			count, ok := repeatByLines[currentLine]
+			if ok {
+				repeatByLines[currentLine] = count + 1
+			} else {
+				repeatByLines[currentLine] = 1
+			}
+		}
+
+		// Формирование списка неповторяющихся строк
+		if line != currentLine {
+			countEntered++
+			if countEntered == 1 {
+				line = memoryLine
+				inputLines = append(inputLines, line)
+				line = currentLine
+				countEntered = 0
+				continue
+			}
+		}
 	}
 
 	// Проверка ошибок после завершения сканирования
@@ -237,6 +294,12 @@ func uniq(c bool) {
 	}
 
 	linesOfF, err := repeatByLinesF(c, 1)
+	if err != nil {
+		fmt.Println("Ошибка при подсчете строк:", err)
+		return
+	}
+
+	linesOfS, err := repeatByLinesS(c, 1)
 	if err != nil {
 		fmt.Println("Ошибка при подсчете строк:", err)
 		return
@@ -299,6 +362,20 @@ func uniq(c bool) {
 	_, err = writer.WriteString("parameter -f \n")
 
 	for _, line := range linesOfF {
+		if c {
+			line = fmt.Sprintf("%s", line)
+		}
+		_, err := writer.WriteString(line + "\n")
+		if err != nil {
+			fmt.Println("Ошибка при записи в файл:", err)
+			return
+		}
+	}
+
+	_, err = writer.WriteString("\n")
+	_, err = writer.WriteString("parameter -s \n")
+
+	for _, line := range linesOfS {
 		if c {
 			line = fmt.Sprintf("%s", line)
 		}

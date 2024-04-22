@@ -1,7 +1,7 @@
 parameter -c 
-1 We love music.
 1 I love music.
-1 They love music.
+1 A love music.
+1 C love music.
 1 
 1 I love music of Kartik.
 1 We love music of Kartik.
@@ -10,16 +10,23 @@ parameter -c
 parameter -d 
 
 parameter -u 
-Thanks.
-We love music.
-I love music.
-They love music.
+C love music.
 
 I love music of Kartik.
 We love music of Kartik.
+Thanks.
+I love music.
+A love music.
 
 parameter -f 
-We love music.
+I love music.
 
 I love music of Kartik.
+Thanks.
+
+parameter -s 
+I love music.
+
+I love music of Kartik.
+We love music of Kartik.
 Thanks.
