@@ -273,6 +273,58 @@ func repeatByLinesS(c bool, numChars int) ([]string, error) {
 	return inputLines, nil
 }
 
+func repeatByLinesI(c bool) ([]string, error) {
+	var (
+		countEntered  int
+		line          string
+		inputLines    []string
+		repeatByLines = make(map[string]int)
+	)
+
+	scanner, file, err := getFile()
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	// Чтение файла по одной строке
+	for scanner.Scan() {
+		currentLine := scanner.Text()
+		memoryLine := currentLine
+
+		// Приведение строки к нижнему регистру
+		currentLine = strings.ToLower(currentLine)
+		if c {
+			count, ok := repeatByLines[currentLine]
+			if ok {
+				repeatByLines[currentLine] = count + 1
+			} else {
+				repeatByLines[currentLine] = 1
+			}
+		}
+
+		// Формирование списка неповторяющихся строк
+		if line != currentLine {
+			countEntered++
+			if countEntered == 1 {
+				line = memoryLine
+				inputLines = append(inputLines, line)
+				line = currentLine
+				countEntered = 0
+				continue
+			}
+		}
+	}
+
+	// Проверка ошибок после завершения сканирования
+	err = scanner.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return inputLines, nil
+}
+
 func uniq(c bool) {
 
 	linesOfC, countByString, err := countByString(c)
@@ -300,6 +352,12 @@ func uniq(c bool) {
 	}
 
 	linesOfS, err := repeatByLinesS(c, 1)
+	if err != nil {
+		fmt.Println("Ошибка при подсчете строк:", err)
+		return
+	}
+
+	linesOfI, err := repeatByLinesI(c)
 	if err != nil {
 		fmt.Println("Ошибка при подсчете строк:", err)
 		return
@@ -376,6 +434,20 @@ func uniq(c bool) {
 	_, err = writer.WriteString("parameter -s \n")
 
 	for _, line := range linesOfS {
+		if c {
+			line = fmt.Sprintf("%s", line)
+		}
+		_, err := writer.WriteString(line + "\n")
+		if err != nil {
+			fmt.Println("Ошибка при записи в файл:", err)
+			return
+		}
+	}
+
+	_, err = writer.WriteString("\n")
+	_, err = writer.WriteString("parameter -i \n")
+
+	for _, line := range linesOfI {
 		if c {
 			line = fmt.Sprintf("%s", line)
 		}
