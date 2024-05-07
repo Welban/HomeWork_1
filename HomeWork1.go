@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+// TODO: Флаги?
+
 func main() {
 	uniq(true)
 }
@@ -27,14 +29,14 @@ func getFile() (*bufio.Scanner, *os.File, error) {
 }
 
 // Функция для подсчита количества встречаний строки во входных данных
-func countByString(c bool) ([]string, map[string]int, error) {
+func repeatByLinesC(c bool) ([]string, map[string]int, error) {
 	var (
 		line          string
 		inputLines    []string
-		countByString = make(map[string]int)
+		countByString = make(map[string]int) // TODO: func countByString and var countByString?? \/
 	)
 
-	scanner, file, err := getFile()
+	scanner, file, err := getFile() // TODO: Всего лишь один раз вызвать
 	if err != nil {
 		return nil, nil, err
 	}
@@ -43,9 +45,9 @@ func countByString(c bool) ([]string, map[string]int, error) {
 	// Чтение файла по одной строке
 	for scanner.Scan() {
 		currentLine := scanner.Text()
-		if c {
+		if c { // TODO: не нужное C
 			count, ok := countByString[currentLine]
-			if ok {
+			if ok { // TODO: тоже не нужно делать
 				countByString[currentLine] = count + 1
 			} else {
 				countByString[currentLine] = 1
@@ -101,6 +103,7 @@ func repeatByLinesD(c bool) ([]string, error) {
 		}
 	}
 
+	// TODO: проверка должна быть раньше
 	// Проверка ошибок после завершения сканирования
 	err = scanner.Err()
 	if err != nil {
@@ -192,12 +195,12 @@ func repeatByLinesF(c bool, numFields int) ([]string, error) {
 
 		// Формирование списка неповторяющихся строк
 		if line != currentLine {
-			countEntered++
-			if countEntered == 1 {
+			countEntered++         // TODO: Strange
+			if countEntered == 1 { // TODO: Strange
 				line = memoryLine
 				inputLines = append(inputLines, line)
 				line = currentLine
-				countEntered = 0
+				countEntered = 0 // TODO: Strange
 				continue
 			}
 		}
@@ -231,12 +234,16 @@ func repeatByLinesS(c bool, numChars int) ([]string, error) {
 		currentLine := scanner.Text()
 		memoryLine := currentLine
 
-		if currentLine == "" {
-			line = memoryLine
-			inputLines = append(inputLines, line)
-			line = currentLine
-			continue
-		} else if len(currentLine) <= numChars {
+		//if currentLine == "" {
+		//	line = memoryLine
+		//	inputLines = append(inputLines, line)
+		//	line = currentLine
+		//	continue
+		//} else if len(currentLine) <= numChars {
+		//	continue
+		//}
+
+		if len(currentLine) <= numChars {
 			continue
 		}
 
@@ -259,7 +266,7 @@ func repeatByLinesS(c bool, numChars int) ([]string, error) {
 				inputLines = append(inputLines, line)
 				line = currentLine
 				countEntered = 0
-				continue
+				continue // TODO: continue skip
 			}
 		}
 	}
@@ -327,7 +334,7 @@ func repeatByLinesI(c bool) ([]string, error) {
 
 func uniq(c bool) {
 
-	linesOfC, countByString, err := countByString(c)
+	linesOfC, countByString, err := repeatByLinesC(c)
 	if err != nil {
 		fmt.Println("Ошибка при подсчете строк:", err)
 		return

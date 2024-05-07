@@ -10,15 +10,15 @@ parameter -c
 2 I love MuSIC of Kartik.
 
 parameter -d 
-I love music of kartik.
 I love MuSIC of Kartik.
+I love music of kartik.
 
 parameter -u 
-
 Thanks.
 I LOVE MUSIC.
 I love music.
 I LoVe MuSiC.
+
 
 parameter -f 
 I LOVE MUSIC.
@@ -35,7 +35,6 @@ parameter -s
 I LOVE MUSIC.
 I love music.
 I LoVe MuSiC.
-
 I love MuSIC of Kartik.
 I love music of kartik.
 Thanks.
